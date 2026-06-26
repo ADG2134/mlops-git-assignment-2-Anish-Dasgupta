@@ -1,7 +1,9 @@
 # Assignment 2 — Data Validation & Testing Report
 
-**Course:** MAI201 MLOps
+**Github Link:** https://github.com/ADG2134/mlops-git-assignment-2-Anish-Dasgupta
+
 **Dataset:** `data/customer_data.csv` (the real provided dataset — 5,015 rows, 7 columns, converted from `customer_data.xlsx`)
+
 **Tools:** Great Expectations 1.18, pytest 9.1, pandas
 
 ---
