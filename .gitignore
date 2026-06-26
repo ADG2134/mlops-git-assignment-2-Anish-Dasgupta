@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+pytest_output.txt
+pytest_output.html
+pytest_output_full.html

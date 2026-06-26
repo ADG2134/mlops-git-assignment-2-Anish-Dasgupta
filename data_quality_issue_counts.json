@@ -1,0 +1,17 @@
+{
+  "total_rows": 5015,
+  "missing_customer_id": 150,
+  "duplicate_customer_id_rows": 303,
+  "fully_duplicate_rows": 15,
+  "missing_age": 147,
+  "age_out_of_range": 384,
+  "missing_email": 438,
+  "invalid_email_format": 346,
+  "missing_salary": 425,
+  "negative_salary": 159,
+  "missing_country": 41,
+  "invalid_country": 342,
+  "missing_phone": 319,
+  "inconsistent_phone_format": 3906,
+  "missing_signup_date": 14
+}
