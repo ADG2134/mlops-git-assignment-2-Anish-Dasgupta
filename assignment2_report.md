@@ -91,30 +91,31 @@ cases (`test_data_utils.py`) covering normal, edge, and invalid inputs:
 
 ## 4. Reflection: Which Data Quality Issue Would Most Impact ML Model Performance?
 
-Of all the issues found in this dataset, **the `age` and `salary` corruption -
-sentinel/out-of-range values (e.g. `age = 999`, `age = -999`) and missing or
-negative salaries that would most damage ML model performance**, for a few reasons:
+If I had to pick the single most damaging issue in this dataset, I'd go with the corrupted numeric fields, specifically the sentinel/out-of-range values in `age` (like 999 or -999) and the missing or negative entries in `salary`. It's not the issue with the highest count, but it's the one I'd be most nervous about if this data ever made it into a training pipeline.
 
-1. **Sentinel values masquerade as real data.** Values like `age = 999` or
-   `age = -999` are clearly placeholders for "unknown," but unless explicitly
-   filtered, a model will treat them as legitimate numeric ages. A handful of
-   999s can drag a feature's mean and standard deviation far from its true
-   distribution, corrupting any normalization or scaling applied to the whole
-   column, and therefore every other row's value for that feature.
-2. **They're silent.** Unlike a missing email (`NaN`, easy to detect with
-   `isnull()`), a wrong-but-plausible numeric value passes type checks and
-   basic null checks without complaint. It only surfaces once it's already
-   distorted model weights or skewed predictions.
-3. **High prevalence here.** With `age` out of range in **7.66%** of rows and
-   `salary` missing or negative in over **11%** of rows combined, this isn't a
-   rare edge case, it's a substantial fraction of the dataset that would
-   meaningfully bias any model trained on these columns as numeric features.
+- **It looks legitimate when it isn't.** A blank email field or an empty phone number is obviously broken, any basic check will flag it. But `age = 999` is a perfectly valid integer as far as a computer is concerned. There's no type mismatch, no null, nothing for a standard validation step to catch unless someone has specifically thought to bound-check that column. Whoever entered 999 almost certainly meant "I don't know this person's age," but nothing in the data itself says that.
 
-By contrast, inconsistent phone formatting (the single largest issue by count,
-at 77.89% of rows) has little effect on a typical ML pipeline, since phone
-numbers are rarely used as direct model inputs, it matters far more for
-downstream operational use (e.g. contacting a customer) than for prediction
-quality.
+- **It quietly distorts the whole column, not just itself.** Once a handful of 999s and -999s sit in the age column, they drag the mean and inflate the standard deviation. Any standardization or min-max scaling computed from that column inherits the distortion, and since scaling parameters get applied uniformly to every row, even the perfectly valid ages end up transformed using a corrupted baseline. One bad value doesn't just hurt its own row, it quietly degrades every row that shares the feature.
+
+- **It fails silently, which is what makes it dangerous.** A malformed email like `user@@example.com` fails loudly, a regex check rejects it on the spot, and a developer fixes it before training ever starts. A salary of -50000 doesn't trigger anything. It just trains a model on a negative number where there shouldn't be one. The first sign of trouble usually isn't an error message, it's a model that performs worse than expected, or makes oddly confident predictions for certain customers, and the actual cause is rarely obvious until someone goes digging.
+
+- **It isn't a rare fluke in this dataset.** Age values were out of the 0–120 range in about 7.7% of all rows, and salary was either missing or negative in roughly 11% of rows combined. That's not a handful of stray records, it's a meaningful fraction of the data. Any model that leans on age or salary as a numeric feature is very likely training on a distribution that doesn't reflect reality.
+
+- **For comparison, the most frequent issue here matters far less for modeling.** Inconsistent phone number formatting affected close to 78% of rows, by far the largest count of any issue. But phone numbers are rarely fed into a predictive model as a feature in the first place, so this is mostly an operational problem (you can't reliably call a customer) rather than something that corrupts model performance. Frequency alone doesn't determine impact, what the column is actually used for does.
+
+### Issue Impact Comparison
+
+| Issue | % of Rows Affected | Detectable by Basic Checks? | Typically Used as a Model Feature? | Estimated ML Impact |
+|---|---|---|---|---|
+| `age` out of range (999, -999, negatives, >120) | 7.66% | No — passes type/null checks | Yes | **High** |
+| `salary` missing or negative | 11.64% (combined) | No — passes type checks | Yes | **High** |
+| Invalid `email` format | 6.90% | Yes — regex catches it instantly | No | Low |
+| Invalid `country` (outside allowed set) | 6.82% | Yes — set-membership check | Sometimes (categorical) | Medium |
+| Inconsistent `phone` format | 77.89% | Yes — pattern mismatch is obvious | No | Low |
+| Duplicate `customer_id` rows | 6.04% | Yes — uniqueness check | Indirect (via leakage risk) | Medium |
+| Missing `signup_date` | 0.28% | Yes — null check | Sometimes (recency feature) | Low |
+
+The table makes the core point visually: the two issues with the highest estimated impact on model performance (`age` and `salary` corruption) are **not** the most frequent issues in the dataset, and neither is reliably caught by basic validation. Frequency and detectability don't line up with actual modeling risk, which is exactly why value-level checks (not just null/type checks) need to be part of the validation suite.
 
 ---
 
