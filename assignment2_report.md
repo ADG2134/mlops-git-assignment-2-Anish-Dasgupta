@@ -36,7 +36,7 @@ Great Expectations Data Docs (HTML) was generated at:
 
 ### Screenshot — Validation Results
 
-![GE Validation Results](screenshots/ge_validation_results_real.png)
+![GE Validation Results](screenshots/ge_validation_results.png)
 
 ---
 
