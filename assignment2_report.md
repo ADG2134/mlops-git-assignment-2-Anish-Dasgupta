@@ -89,28 +89,28 @@ cases (`test_data_utils.py`) covering normal, edge, and invalid inputs:
 
 ## 4. Reflection: Which Data Quality Issue Would Most Impact ML Model Performance?
 
-Of all the issues found in this dataset, **the `age` and `salary` corruption —
+Of all the issues found in this dataset, **the `age` and `salary` corruption -
 sentinel/out-of-range values (e.g. `age = 999`, `age = -999`) and missing or
-negative salaries — would most damage ML model performance**, for a few reasons:
+negative salaries that would most damage ML model performance**, for a few reasons:
 
 1. **Sentinel values masquerade as real data.** Values like `age = 999` or
    `age = -999` are clearly placeholders for "unknown," but unless explicitly
    filtered, a model will treat them as legitimate numeric ages. A handful of
    999s can drag a feature's mean and standard deviation far from its true
    distribution, corrupting any normalization or scaling applied to the whole
-   column — and therefore every other row's value for that feature.
+   column, and therefore every other row's value for that feature.
 2. **They're silent.** Unlike a missing email (`NaN`, easy to detect with
    `isnull()`), a wrong-but-plausible numeric value passes type checks and
    basic null checks without complaint. It only surfaces once it's already
    distorted model weights or skewed predictions.
-3. **High prevalence here.** With `age` out-of-range in **7.66%** of rows and
+3. **High prevalence here.** With `age` out of range in **7.66%** of rows and
    `salary` missing or negative in over **11%** of rows combined, this isn't a
-   rare edge case — it's a substantial fraction of the dataset that would
+   rare edge case, it's a substantial fraction of the dataset that would
    meaningfully bias any model trained on these columns as numeric features.
 
 By contrast, inconsistent phone formatting (the single largest issue by count,
 at 77.89% of rows) has little effect on a typical ML pipeline, since phone
-numbers are rarely used as direct model inputs — it matters far more for
+numbers are rarely used as direct model inputs, it matters far more for
 downstream operational use (e.g. contacting a customer) than for prediction
 quality.
 
